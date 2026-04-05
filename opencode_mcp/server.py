@@ -7,12 +7,12 @@ from typing import Any
 import fastmcp
 from pydantic import Field
 
-from opencode_mcp.core.client import OpencodeClient
-from opencode_mcp.core.process import OpencodeProcess
 from opencode_mcp.errors import OpencodeError, format_error
-from opencode_mcp.routers.gemini import register as register_gemini
-from opencode_mcp.routers.opencode import register as register_opencode
-from opencode_mcp.routers.qwen import register as register_qwen
+from opencode_mcp.providers.gemini.provider import GeminiProvider
+from opencode_mcp.providers.opencode.client import OpencodeClient
+from opencode_mcp.providers.opencode.process import OpencodeProcess
+from opencode_mcp.providers.opencode.provider import OpencodeProvider
+from opencode_mcp.providers.qwen.provider import QwenProvider
 from opencode_mcp.session_manager import SessionManager
 from opencode_mcp.tools import handle_shutdown
 
@@ -29,11 +29,8 @@ REQUEST_TIMEOUT = float(os.getenv("OPENCODE_REQUEST_TIMEOUT", "120"))
 
 mcp = fastmcp.FastMCP("opencode-mcp")
 
-_process = OpencodeProcess(
-    model=DEFAULT_MODEL,
-    port=PORT,
-    startup_timeout=STARTUP_TIMEOUT,
-)
+# Shared state
+_process = OpencodeProcess(model=DEFAULT_MODEL, port=PORT, startup_timeout=STARTUP_TIMEOUT)
 _session_manager = SessionManager()
 _state: dict[str, Any] = {"default_model": DEFAULT_MODEL}
 _client: OpencodeClient | None = None
@@ -55,8 +52,8 @@ def _wrap_error(err: OpencodeError) -> dict[str, Any]:
     return dict(format_error(err))
 
 
-# Register tools from each provider router
-register_opencode(
+# Register all provider tools
+OpencodeProvider().register(
     mcp,
     state=_state,
     get_client=_get_client,
@@ -64,11 +61,11 @@ register_opencode(
     session_manager=_session_manager,
     request_timeout=REQUEST_TIMEOUT,
 )
-register_gemini(mcp)
-register_qwen(mcp)
+GeminiProvider().register(mcp)
+QwenProvider().register(mcp)
 
 
-# Shutdown lives here because it owns the client lifecycle
+# Shutdown lives here — it owns the client lifecycle
 @mcp.tool()
 async def opencode_shutdown() -> dict[str, Any]:
     """
