@@ -128,16 +128,36 @@ async def test_shutdown_stops_process_and_closes_sessions(session_manager, mock_
 
 
 @pytest.mark.asyncio
-async def test_list_models_returns_models(monkeypatch):
+async def test_list_models_returns_models_grouped_by_provider(monkeypatch):
     def fake_run(*args, **kwargs):
         class FakeResult:
             returncode = 0
-            stdout = "ollama/qwen3.5:cloud\nollama/gemma4:e4b\n"
+            stdout = "ollama/qwen3.5:cloud\nollama/gemma4:e4b\nopenai/gpt-4o\ngoogle/gemini-2.5-flash\n"
             stderr = ""
         return FakeResult()
     monkeypatch.setattr("opencode_mcp.tools.subprocess.run", fake_run)
     result = await handle_list_models()
     assert "ollama/qwen3.5:cloud" in result["models"]
+    assert result["total"] == 4
+    assert result["by_provider"]["ollama"] == ["ollama/qwen3.5:cloud", "ollama/gemma4:e4b"]
+    assert result["by_provider"]["openai"] == ["openai/gpt-4o"]
+    assert result["by_provider"]["google"] == ["google/gemini-2.5-flash"]
+
+
+@pytest.mark.asyncio
+async def test_list_models_returns_empty_when_no_providers_connected(monkeypatch):
+    # opencode returns exit 0 with empty stdout when no providers are authenticated
+    def fake_run(*args, **kwargs):
+        class FakeResult:
+            returncode = 0
+            stdout = ""
+            stderr = ""
+        return FakeResult()
+    monkeypatch.setattr("opencode_mcp.tools.subprocess.run", fake_run)
+    result = await handle_list_models()
+    assert result["models"] == []
+    assert result["total"] == 0
+    assert result["by_provider"] == {}
 
 
 @pytest.mark.asyncio

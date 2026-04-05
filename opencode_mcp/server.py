@@ -135,7 +135,7 @@ async def opencode_end_session(
 
 @mcp.tool()
 async def opencode_list_models() -> dict[str, Any]:
-    """List all available models from the ollama provider."""
+    """List all models available in opencode, grouped by provider. Only authenticated/connected providers will show models."""
     try:
         result = await handle_list_models()
         result["default_model"] = _state["default_model"]

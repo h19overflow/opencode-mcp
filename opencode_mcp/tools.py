@@ -80,10 +80,10 @@ async def handle_end_session(
     return {"session_id": session_id, "closed": True}
 
 
-def _run_opencode_models_command() -> list[str]:
+def _run_opencode_models_command() -> dict[str, list[str]]:
     try:
         result = subprocess.run(
-            ["opencode", "models", "ollama"],
+            ["opencode", "models"],
             capture_output=True, text=True, timeout=30,
             stdin=subprocess.DEVNULL,
         )
@@ -106,15 +106,23 @@ def _run_opencode_models_command() -> list[str]:
             message=f"opencode models command failed with exit code {result.returncode}",
             detail={"stderr": result.stderr},
             recoverable=False,
-            suggestion="Check opencode installation or run 'opencode models ollama' manually.",
+            suggestion="Check opencode installation or run 'opencode models' manually.",
         )
-    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    grouped: dict[str, list[str]] = {}
+    for line in result.stdout.splitlines():
+        model = line.strip()
+        if not model:
+            continue
+        provider = model.split("/")[0] if "/" in model else "other"
+        grouped.setdefault(provider, []).append(model)
+    return grouped
 
 
 async def handle_list_models() -> dict[str, Any]:
     loop = asyncio.get_running_loop()
-    models = await loop.run_in_executor(None, _run_opencode_models_command)
-    return {"models": models}
+    grouped = await loop.run_in_executor(None, _run_opencode_models_command)
+    all_models = [m for models in grouped.values() for m in models]
+    return {"models": all_models, "by_provider": grouped, "total": len(all_models)}
 
 
 async def handle_set_model(model: str, state: dict[str, Any]) -> dict[str, Any]:
