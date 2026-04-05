@@ -1,8 +1,8 @@
 import pytest
 import respx
 import httpx
-from opencode_mcp.core.client import OpencodeClient
-from opencode_mcp.errors import OpencodeProtocolError, OpencodeTimeoutError
+from polycode.core.client import OpencodeClient
+from polycode.errors import OpencodeProtocolError, OpencodeTimeoutError
 
 
 BASE_URL = "http://127.0.0.1:9999"

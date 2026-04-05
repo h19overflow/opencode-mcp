@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
-from opencode_mcp.errors import OpencodeSessionError
+from polycode.errors import OpencodeSessionError
 
 
 @dataclass

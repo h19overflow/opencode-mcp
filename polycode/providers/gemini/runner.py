@@ -5,13 +5,13 @@ import shutil
 import subprocess
 from typing import Any
 
-from opencode_mcp.errors import (
+from polycode.errors import (
     OpencodeBinaryNotFoundError,
     OpencodeProtocolError,
     OpencodeTimeoutError,
     OpencodeValidationError,
 )
-from opencode_mcp.helpers.cli_runner import (
+from polycode.helpers.cli_runner import (
     _assert_zero_exit,
     _resolve_binary,
     _run_subprocess,

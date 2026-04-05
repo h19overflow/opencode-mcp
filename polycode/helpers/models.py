@@ -3,7 +3,7 @@ from __future__ import annotations
 import subprocess
 from typing import Any
 
-from opencode_mcp.errors import OpencodeValidationError
+from polycode.errors import OpencodeValidationError
 
 
 def list_all_models() -> dict[str, Any]:

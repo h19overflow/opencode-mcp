@@ -1,15 +1,15 @@
-# opencode-mcp Implementation Plan
+# polycode Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build a production-grade FastMCP server that wraps opencode's headless HTTP server, exposing 8 MCP tools for session management, multi-turn prompting, and model control.
 
-**Architecture:** A Python package (`opencode_mcp`) with five focused modules: process lifecycle manager, async HTTP client, session registry, tool handlers, and FastMCP server entrypoint. The MCP server spawns one `opencode serve` process at startup and proxies all tool calls to its REST API via httpx.
+**Architecture:** A Python package (`polycode`) with five focused modules: process lifecycle manager, async HTTP client, session registry, tool handlers, and FastMCP server entrypoint. The MCP server spawns one `opencode serve` process at startup and proxies all tool calls to its REST API via httpx.
 
 **Tech Stack:** Python 3.11+, fastmcp, httpx, pydantic v2, pytest + pytest-asyncio, respx, opencode CLI v1.3.15+
 
-**Repo:** https://github.com/h19overflow/opencode-mcp  
-**Working dir:** `C:\Users\User\publicprojects\opencode-mcp`  
+**Repo:** https://github.com/h19overflow/polycode  
+**Working dir:** `C:\Users\User\publicprojects\polycode`  
 **Branch strategy:** `main` branch, one commit per task, push after each task.
 
 ---
@@ -36,11 +36,11 @@ Task 6 requires Tasks 3, 4, 5 complete.
 ## Pre-flight Checks (run before starting)
 
 ```bash
-cd /c/Users/User/publicprojects/opencode-mcp
+cd /c/Users/User/publicprojects/polycode
 python --version          # must be 3.11+
 opencode --version        # must be present
 ollama list               # verify ollama is running
-git remote -v             # must show h19overflow/opencode-mcp
+git remote -v             # must show h19overflow/polycode
 ```
 
 ---
@@ -49,13 +49,13 @@ git remote -v             # must show h19overflow/opencode-mcp
 
 | File | Responsibility |
 |------|----------------|
-| `opencode_mcp/__init__.py` | Package version export |
-| `opencode_mcp/errors.py` | Error hierarchy + structured error formatter |
-| `opencode_mcp/opencode_process.py` | Spawn/stop/health-check the `opencode serve` subprocess |
-| `opencode_mcp/opencode_client.py` | Async HTTP client wrapping opencode REST API |
-| `opencode_mcp/session_manager.py` | In-memory session registry + message history |
-| `opencode_mcp/tools.py` | FastMCP tool definitions (`@mcp.tool()`) |
-| `opencode_mcp/server.py` | FastMCP app + entrypoint (`opencode-mcp` CLI command) |
+| `polycode/__init__.py` | Package version export |
+| `polycode/errors.py` | Error hierarchy + structured error formatter |
+| `polycode/opencode_process.py` | Spawn/stop/health-check the `opencode serve` subprocess |
+| `polycode/opencode_client.py` | Async HTTP client wrapping opencode REST API |
+| `polycode/session_manager.py` | In-memory session registry + message history |
+| `polycode/tools.py` | FastMCP tool definitions (`@mcp.tool()`) |
+| `polycode/server.py` | FastMCP app + entrypoint (`polycode` CLI command) |
 | `tests/conftest.py` | Shared fixtures (mock httpx, mock subprocess, real process fixture) |
 | `tests/test_errors.py` | Error formatting tests |
 | `tests/test_opencode_client.py` | HTTP client unit tests (mocked httpx) |
@@ -71,7 +71,7 @@ git remote -v             # must show h19overflow/opencode-mcp
 
 **Files:**
 - Create: `pyproject.toml`
-- Create: `opencode_mcp/__init__.py`
+- Create: `polycode/__init__.py`
 - Create: `.env.example`
 
 - [ ] **Step 1: Create `pyproject.toml`**
@@ -82,7 +82,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "opencode-mcp"
+name = "polycode"
 version = "0.1.0"
 description = "MCP server wrapping opencode's headless HTTP server"
 readme = "README.md"
@@ -94,7 +94,7 @@ dependencies = [
 ]
 
 [project.scripts]
-opencode-mcp = "opencode_mcp.server:main"
+polycode = "polycode.server:main"
 
 [project.optional-dependencies]
 dev = [
@@ -112,10 +112,10 @@ markers = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["opencode_mcp"]
+packages = ["polycode"]
 ```
 
-- [ ] **Step 2: Create `opencode_mcp/__init__.py`**
+- [ ] **Step 2: Create `polycode/__init__.py`**
 
 ```python
 __version__ = "0.1.0"
@@ -146,7 +146,7 @@ OPENCODE_LOG_LEVEL=INFO
 - [ ] **Step 4: Install dependencies**
 
 ```bash
-cd /c/Users/User/publicprojects/opencode-mcp
+cd /c/Users/User/publicprojects/polycode
 pip install -e ".[dev]"
 ```
 
@@ -156,8 +156,8 @@ Expected: All packages install without errors.
 
 ```bash
 git init
-git add pyproject.toml opencode_mcp/__init__.py .env.example
-git commit -m "chore: scaffold opencode-mcp project"
+git add pyproject.toml polycode/__init__.py .env.example
+git commit -m "chore: scaffold polycode project"
 ```
 
 ---
@@ -166,14 +166,14 @@ git commit -m "chore: scaffold opencode-mcp project"
 
 **Files:**
 - Create: `tests/test_errors.py`
-- Create: `opencode_mcp/errors.py`
+- Create: `polycode/errors.py`
 
 - [ ] **Step 1: Write failing tests**
 
 ```python
 # tests/test_errors.py
 import pytest
-from opencode_mcp.errors import (
+from polycode.errors import (
     OpencodeError,
     OpencodeBinaryNotFoundError,
     OpencodePortError,
@@ -236,9 +236,9 @@ def test_binary_not_found_includes_install_hint():
 pytest tests/test_errors.py -v
 ```
 
-Expected: `ImportError` — `opencode_mcp.errors` does not exist yet.
+Expected: `ImportError` — `polycode.errors` does not exist yet.
 
-- [ ] **Step 3: Implement `opencode_mcp/errors.py`**
+- [ ] **Step 3: Implement `polycode/errors.py`**
 
 ```python
 from __future__ import annotations
@@ -333,7 +333,7 @@ Expected: All 4 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add opencode_mcp/errors.py tests/test_errors.py
+git add polycode/errors.py tests/test_errors.py
 git commit -m "feat: add structured error hierarchy"
 ```
 
@@ -343,15 +343,15 @@ git commit -m "feat: add structured error hierarchy"
 
 **Files:**
 - Create: `tests/test_session_manager.py`
-- Create: `opencode_mcp/session_manager.py`
+- Create: `polycode/session_manager.py`
 
 - [ ] **Step 1: Write failing tests**
 
 ```python
 # tests/test_session_manager.py
 import pytest
-from opencode_mcp.session_manager import SessionManager, Session
-from opencode_mcp.errors import OpencodeSessionError
+from polycode.session_manager import SessionManager, Session
+from polycode.errors import OpencodeSessionError
 
 
 def test_create_session_returns_session():
@@ -434,7 +434,7 @@ pytest tests/test_session_manager.py -v
 
 Expected: `ImportError` — module does not exist yet.
 
-- [ ] **Step 3: Implement `opencode_mcp/session_manager.py`**
+- [ ] **Step 3: Implement `polycode/session_manager.py`**
 
 ```python
 from __future__ import annotations
@@ -443,7 +443,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
-from opencode_mcp.errors import OpencodeSessionError
+from polycode.errors import OpencodeSessionError
 
 
 @dataclass
@@ -524,7 +524,7 @@ Expected: All 8 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add opencode_mcp/session_manager.py tests/test_session_manager.py
+git add polycode/session_manager.py tests/test_session_manager.py
 git commit -m "feat: add session manager with history tracking"
 ```
 
@@ -533,7 +533,7 @@ git commit -m "feat: add session manager with history tracking"
 ## Task 4: opencode Process Manager
 
 **Files:**
-- Create: `opencode_mcp/opencode_process.py`
+- Create: `polycode/opencode_process.py`
 - Create: `tests/test_opencode_process.py`
 
 - [ ] **Step 1: Write failing tests**
@@ -542,8 +542,8 @@ git commit -m "feat: add session manager with history tracking"
 # tests/test_opencode_process.py
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from opencode_mcp.opencode_process import OpencodeProcess
-from opencode_mcp.errors import OpencodeBinaryNotFoundError, OpencodePortError, OpencodeStartupError
+from polycode.opencode_process import OpencodeProcess
+from polycode.errors import OpencodeBinaryNotFoundError, OpencodePortError, OpencodeStartupError
 
 
 @pytest.fixture
@@ -592,7 +592,7 @@ pytest tests/test_opencode_process.py -v
 
 Expected: `ImportError` — module does not exist yet.
 
-- [ ] **Step 3: Implement `opencode_mcp/opencode_process.py`**
+- [ ] **Step 3: Implement `polycode/opencode_process.py`**
 
 ```python
 from __future__ import annotations
@@ -606,7 +606,7 @@ from asyncio.subprocess import Process
 
 import httpx
 
-from opencode_mcp.errors import (
+from polycode.errors import (
     OpencodeBinaryNotFoundError,
     OpencodePortError,
     OpencodeStartupError,
@@ -749,7 +749,7 @@ Expected: All 5 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add opencode_mcp/opencode_process.py tests/test_opencode_process.py
+git add polycode/opencode_process.py tests/test_opencode_process.py
 git commit -m "feat: add opencode process lifecycle manager"
 ```
 
@@ -758,7 +758,7 @@ git commit -m "feat: add opencode process lifecycle manager"
 ## Task 5: opencode HTTP Client
 
 **Files:**
-- Create: `opencode_mcp/opencode_client.py`
+- Create: `polycode/opencode_client.py`
 - Create: `tests/test_opencode_client.py`
 
 - [ ] **Step 1: Write failing tests**
@@ -768,8 +768,8 @@ git commit -m "feat: add opencode process lifecycle manager"
 import pytest
 import respx
 import httpx
-from opencode_mcp.opencode_client import OpencodeClient
-from opencode_mcp.errors import OpencodeProtocolError, OpencodeModelError
+from polycode.opencode_client import OpencodeClient
+from polycode.errors import OpencodeProtocolError, OpencodeModelError
 
 
 BASE_URL = "http://127.0.0.1:9999"
@@ -854,7 +854,7 @@ pytest tests/test_opencode_client.py -v
 
 Expected: `ImportError` — module does not exist yet.
 
-- [ ] **Step 3: Implement `opencode_mcp/opencode_client.py`**
+- [ ] **Step 3: Implement `polycode/opencode_client.py`**
 
 ```python
 from __future__ import annotations
@@ -864,7 +864,7 @@ from typing import Any
 
 import httpx
 
-from opencode_mcp.errors import OpencodeProtocolError, OpencodeTimeoutError
+from polycode.errors import OpencodeProtocolError, OpencodeTimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -974,7 +974,7 @@ Expected: All 6 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add opencode_mcp/opencode_client.py tests/test_opencode_client.py
+git add polycode/opencode_client.py tests/test_opencode_client.py
 git commit -m "feat: add async HTTP client for opencode REST API"
 ```
 
@@ -983,7 +983,7 @@ git commit -m "feat: add async HTTP client for opencode REST API"
 ## Task 6: MCP Tool Handlers
 
 **Files:**
-- Create: `opencode_mcp/tools.py`
+- Create: `polycode/tools.py`
 - Create: `tests/test_tools.py`
 
 - [ ] **Step 1: Write failing tests**
@@ -992,7 +992,7 @@ git commit -m "feat: add async HTTP client for opencode REST API"
 # tests/test_tools.py
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from opencode_mcp.tools import (
+from polycode.tools import (
     handle_start_session,
     handle_send_message,
     handle_get_history,
@@ -1002,8 +1002,8 @@ from opencode_mcp.tools import (
     handle_set_model,
     handle_shutdown,
 )
-from opencode_mcp.session_manager import SessionManager
-from opencode_mcp.errors import OpencodeSessionError, OpencodeValidationError
+from polycode.session_manager import SessionManager
+from polycode.errors import OpencodeSessionError, OpencodeValidationError
 
 
 @pytest.fixture
@@ -1126,7 +1126,7 @@ pytest tests/test_tools.py -v
 
 Expected: `ImportError` — module does not exist yet.
 
-- [ ] **Step 3: Implement `opencode_mcp/tools.py`**
+- [ ] **Step 3: Implement `polycode/tools.py`**
 
 ```python
 from __future__ import annotations
@@ -1135,10 +1135,10 @@ import logging
 import os
 from typing import Any
 
-from opencode_mcp.errors import OpencodeValidationError, format_error
-from opencode_mcp.opencode_client import OpencodeClient
-from opencode_mcp.opencode_process import OpencodeProcess
-from opencode_mcp.session_manager import SessionManager
+from polycode.errors import OpencodeValidationError, format_error
+from polycode.opencode_client import OpencodeClient
+from polycode.opencode_process import OpencodeProcess
+from polycode.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 
@@ -1248,7 +1248,7 @@ Expected: All 9 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add opencode_mcp/tools.py tests/test_tools.py
+git add polycode/tools.py tests/test_tools.py
 git commit -m "feat: add MCP tool handlers"
 ```
 
@@ -1257,7 +1257,7 @@ git commit -m "feat: add MCP tool handlers"
 ## Task 7: FastMCP Server + Entrypoint
 
 **Files:**
-- Create: `opencode_mcp/server.py`
+- Create: `polycode/server.py`
 - Create: `tests/conftest.py`
 
 - [ ] **Step 1: Create shared test fixtures**
@@ -1267,9 +1267,9 @@ git commit -m "feat: add MCP tool handlers"
 import pytest
 import pytest_asyncio
 from unittest.mock import AsyncMock, MagicMock
-from opencode_mcp.session_manager import SessionManager
-from opencode_mcp.opencode_client import OpencodeClient
-from opencode_mcp.opencode_process import OpencodeProcess
+from polycode.session_manager import SessionManager
+from polycode.opencode_client import OpencodeClient
+from polycode.opencode_process import OpencodeProcess
 
 
 @pytest.fixture
@@ -1303,7 +1303,7 @@ def mock_process():
     return proc
 ```
 
-- [ ] **Step 2: Implement `opencode_mcp/server.py`**
+- [ ] **Step 2: Implement `polycode/server.py`**
 
 ```python
 from __future__ import annotations
@@ -1315,11 +1315,11 @@ from typing import Any
 import fastmcp
 from pydantic import Field
 
-from opencode_mcp.errors import OpencodeError, format_error
-from opencode_mcp.opencode_client import OpencodeClient
-from opencode_mcp.opencode_process import OpencodeProcess
-from opencode_mcp.session_manager import SessionManager
-from opencode_mcp.tools import (
+from polycode.errors import OpencodeError, format_error
+from polycode.opencode_client import OpencodeClient
+from polycode.opencode_process import OpencodeProcess
+from polycode.session_manager import SessionManager
+from polycode.tools import (
     handle_end_session,
     handle_get_history,
     handle_list_models,
@@ -1341,7 +1341,7 @@ PORT = int(os.getenv("OPENCODE_PORT", "0"))
 STARTUP_TIMEOUT = float(os.getenv("OPENCODE_STARTUP_TIMEOUT", "10"))
 REQUEST_TIMEOUT = float(os.getenv("OPENCODE_REQUEST_TIMEOUT", "120"))
 
-mcp = fastmcp.FastMCP("opencode-mcp")
+mcp = fastmcp.FastMCP("polycode")
 
 _process = OpencodeProcess(
     model=DEFAULT_MODEL,
@@ -1485,7 +1485,7 @@ if __name__ == "__main__":
 - [ ] **Step 3: Verify the server imports cleanly**
 
 ```bash
-python -c "from opencode_mcp.server import mcp; print('OK')"
+python -c "from polycode.server import mcp; print('OK')"
 ```
 
 Expected: `OK`
@@ -1494,7 +1494,7 @@ Expected: `OK`
 
 ```bash
 pip install -e .
-opencode-mcp --help
+polycode --help
 ```
 
 Expected: FastMCP help output with no errors.
@@ -1502,7 +1502,7 @@ Expected: FastMCP help output with no errors.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add opencode_mcp/server.py tests/conftest.py
+git add polycode/server.py tests/conftest.py
 git commit -m "feat: add FastMCP server with all 8 tools"
 ```
 
@@ -1523,8 +1523,8 @@ Run with: pytest tests/test_integration.py -m integration -v
 """
 import pytest
 import asyncio
-from opencode_mcp.opencode_process import OpencodeProcess
-from opencode_mcp.opencode_client import OpencodeClient
+from polycode.opencode_process import OpencodeProcess
+from polycode.opencode_client import OpencodeClient
 
 
 @pytest.fixture(scope="module")
@@ -1624,7 +1624,7 @@ git commit -m "test: add integration tests for live opencode server"
 - [ ] **Step 1: Create README.md**
 
 ````markdown
-# opencode-mcp
+# polycode
 
 A production-grade MCP server that wraps [opencode](https://opencode.ai)'s headless HTTP server, giving Claude Code (or any MCP client) 8 tools to start sessions, send multi-turn prompts, and manage models.
 
@@ -1637,7 +1637,7 @@ A production-grade MCP server that wraps [opencode](https://opencode.ai)'s headl
 ## Installation
 
 ```bash
-pip install opencode-mcp
+pip install polycode
 ```
 
 ## Claude Code Setup
@@ -1648,7 +1648,7 @@ Add to `~/.claude/mcp_config.json`:
 {
   "mcpServers": {
     "opencode": {
-      "command": "opencode-mcp",
+      "command": "polycode",
       "env": {
         "OPENCODE_DEFAULT_MODEL": "ollama/qwen3.5:cloud"
       }
@@ -1695,8 +1695,8 @@ pytest tests/test_integration.py -m integration -v
 
 ```bash
 pip install -e .
-python -c "import opencode_mcp; print(opencode_mcp.__version__)"
-opencode-mcp --help
+python -c "import polycode; print(polycode.__version__)"
+polycode --help
 ```
 
 Expected: `0.1.0`, then FastMCP help text.
@@ -1720,6 +1720,6 @@ git commit -m "docs: add README with installation and MCP config"
 
 ## Self-Review Checklist
 
-- [x] **Spec coverage:** All 8 tools implemented (start_session, send_message, get_history, list_sessions, end_session, list_models, set_model, shutdown). Error hierarchy covers all 9 scenarios from spec. Health check loop (500ms, 10s) in `opencode_process.py`. Crash recovery in `OpencodeRecoveryError`. Structured error format with `format_error()`. Config via env vars. `pip install opencode-mcp` + MCP config entry. Unit, integration, and e2e test tiers.
+- [x] **Spec coverage:** All 8 tools implemented (start_session, send_message, get_history, list_sessions, end_session, list_models, set_model, shutdown). Error hierarchy covers all 9 scenarios from spec. Health check loop (500ms, 10s) in `opencode_process.py`. Crash recovery in `OpencodeRecoveryError`. Structured error format with `format_error()`. Config via env vars. `pip install polycode` + MCP config entry. Unit, integration, and e2e test tiers.
 - [x] **Placeholder scan:** No TBD/TODO. All code blocks are complete. All commands have expected output.
 - [x] **Type consistency:** `SessionManager`, `OpencodeClient`, `OpencodeProcess` used consistently across tasks. `format_error()` defined in Task 2, used in Task 7. `handle_*` functions defined in Task 6, imported in Task 7. `_state` dict shape consistent between Task 6 and Task 7.

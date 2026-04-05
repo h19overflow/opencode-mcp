@@ -1,8 +1,8 @@
 # tests/test_cli_runner.py
 import json
 import pytest
-from opencode_mcp.helpers.cli_runner import run_gemini_prompt, run_qwen_prompt, _parse_qwen_events
-from opencode_mcp.errors import OpencodeBinaryNotFoundError, OpencodeTimeoutError, OpencodeProtocolError, OpencodeValidationError
+from polycode.helpers.cli_runner import run_gemini_prompt, run_qwen_prompt, _parse_qwen_events
+from polycode.errors import OpencodeBinaryNotFoundError, OpencodeTimeoutError, OpencodeProtocolError, OpencodeValidationError
 import subprocess
 
 
@@ -25,8 +25,8 @@ def test_run_gemini_prompt_returns_response(monkeypatch):
             stderr = ""
         return R()
 
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.shutil.which", fake_which)
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.subprocess.run", fake_run)
+    monkeypatch.setattr("polycode.helpers.cli_runner.shutil.which", fake_which)
+    monkeypatch.setattr("polycode.helpers.cli_runner.subprocess.run", fake_run)
 
     result = run_gemini_prompt("hello")
     assert result["response"] == "GEMINI_OK"
@@ -35,24 +35,24 @@ def test_run_gemini_prompt_returns_response(monkeypatch):
 
 
 def test_run_gemini_prompt_raises_when_binary_missing(monkeypatch):
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.shutil.which", lambda n: None)
+    monkeypatch.setattr("polycode.helpers.cli_runner.shutil.which", lambda n: None)
     with pytest.raises(OpencodeBinaryNotFoundError):
         run_gemini_prompt("hello")
 
 
 def test_run_gemini_prompt_raises_on_timeout(monkeypatch):
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.shutil.which", lambda n: "/usr/bin/gemini")
+    monkeypatch.setattr("polycode.helpers.cli_runner.shutil.which", lambda n: "/usr/bin/gemini")
 
     def fake_run(*args, **kwargs):
         raise subprocess.TimeoutExpired(cmd="gemini", timeout=1)
 
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.subprocess.run", fake_run)
+    monkeypatch.setattr("polycode.helpers.cli_runner.subprocess.run", fake_run)
     with pytest.raises(OpencodeTimeoutError):
         run_gemini_prompt("hello", timeout=1)
 
 
 def test_run_gemini_prompt_raises_on_nonzero_exit(monkeypatch):
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.shutil.which", lambda n: "/usr/bin/gemini")
+    monkeypatch.setattr("polycode.helpers.cli_runner.shutil.which", lambda n: "/usr/bin/gemini")
 
     def fake_run(*args, **kwargs):
         class R:
@@ -61,13 +61,13 @@ def test_run_gemini_prompt_raises_on_nonzero_exit(monkeypatch):
             stderr = "auth error"
         return R()
 
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.subprocess.run", fake_run)
+    monkeypatch.setattr("polycode.helpers.cli_runner.subprocess.run", fake_run)
     with pytest.raises(OpencodeValidationError):
         run_gemini_prompt("hello")
 
 
 def test_run_gemini_prompt_raises_on_bad_json(monkeypatch):
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.shutil.which", lambda n: "/usr/bin/gemini")
+    monkeypatch.setattr("polycode.helpers.cli_runner.shutil.which", lambda n: "/usr/bin/gemini")
 
     def fake_run(*args, **kwargs):
         class R:
@@ -76,7 +76,7 @@ def test_run_gemini_prompt_raises_on_bad_json(monkeypatch):
             stderr = ""
         return R()
 
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.subprocess.run", fake_run)
+    monkeypatch.setattr("polycode.helpers.cli_runner.subprocess.run", fake_run)
     with pytest.raises(OpencodeProtocolError):
         run_gemini_prompt("hello")
 
@@ -111,8 +111,8 @@ def test_run_qwen_prompt_returns_response(monkeypatch):
             stderr = ""
         return R()
 
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.shutil.which", fake_which)
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.subprocess.run", fake_run)
+    monkeypatch.setattr("polycode.helpers.cli_runner.shutil.which", fake_which)
+    monkeypatch.setattr("polycode.helpers.cli_runner.subprocess.run", fake_run)
 
     result = run_qwen_prompt("hello")
     assert result["response"] == "QWEN_OK"
@@ -120,24 +120,24 @@ def test_run_qwen_prompt_returns_response(monkeypatch):
 
 
 def test_run_qwen_prompt_raises_when_binary_missing(monkeypatch):
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.shutil.which", lambda n: None)
+    monkeypatch.setattr("polycode.helpers.cli_runner.shutil.which", lambda n: None)
     with pytest.raises(OpencodeBinaryNotFoundError):
         run_qwen_prompt("hello")
 
 
 def test_run_qwen_prompt_raises_on_timeout(monkeypatch):
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.shutil.which", lambda n: "/usr/bin/qwen")
+    monkeypatch.setattr("polycode.helpers.cli_runner.shutil.which", lambda n: "/usr/bin/qwen")
 
     def fake_run(*args, **kwargs):
         raise subprocess.TimeoutExpired(cmd="qwen", timeout=1)
 
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.subprocess.run", fake_run)
+    monkeypatch.setattr("polycode.helpers.cli_runner.subprocess.run", fake_run)
     with pytest.raises(OpencodeTimeoutError):
         run_qwen_prompt("hello", timeout=1)
 
 
 def test_run_qwen_prompt_raises_on_nonzero_exit(monkeypatch):
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.shutil.which", lambda n: "/usr/bin/qwen")
+    monkeypatch.setattr("polycode.helpers.cli_runner.shutil.which", lambda n: "/usr/bin/qwen")
 
     def fake_run(*args, **kwargs):
         class R:
@@ -146,13 +146,13 @@ def test_run_qwen_prompt_raises_on_nonzero_exit(monkeypatch):
             stderr = "auth error"
         return R()
 
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.subprocess.run", fake_run)
+    monkeypatch.setattr("polycode.helpers.cli_runner.subprocess.run", fake_run)
     with pytest.raises(OpencodeValidationError):
         run_qwen_prompt("hello")
 
 
 def test_run_qwen_prompt_raises_on_bad_json(monkeypatch):
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.shutil.which", lambda n: "/usr/bin/qwen")
+    monkeypatch.setattr("polycode.helpers.cli_runner.shutil.which", lambda n: "/usr/bin/qwen")
 
     def fake_run(*args, **kwargs):
         class R:
@@ -161,6 +161,6 @@ def test_run_qwen_prompt_raises_on_bad_json(monkeypatch):
             stderr = ""
         return R()
 
-    monkeypatch.setattr("opencode_mcp.helpers.cli_runner.subprocess.run", fake_run)
+    monkeypatch.setattr("polycode.helpers.cli_runner.subprocess.run", fake_run)
     with pytest.raises(OpencodeProtocolError):
         run_qwen_prompt("hello")

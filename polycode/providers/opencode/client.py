@@ -5,7 +5,7 @@ from typing import Any
 
 import httpx
 
-from opencode_mcp.errors import OpencodeProtocolError, OpencodeTimeoutError
+from polycode.errors import OpencodeProtocolError, OpencodeTimeoutError
 
 logger = logging.getLogger(__name__)
 

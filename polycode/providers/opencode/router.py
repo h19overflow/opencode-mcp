@@ -6,8 +6,8 @@ from typing import Any, Callable
 
 from pydantic import Field
 
-from opencode_mcp.errors import OpencodeError, format_error
-from opencode_mcp.tools import (
+from polycode.errors import OpencodeError, format_error
+from polycode.tools import (
     handle_end_session,
     handle_get_history,
     handle_list_models,

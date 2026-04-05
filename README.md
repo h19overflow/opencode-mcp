@@ -1,4 +1,4 @@
-# opencode-mcp
+# polycode
 
 A production-grade MCP (Model Context Protocol) server exposing **15 tools** that let Claude Code (or any MCP client) control three AI coding agents — [opencode](https://opencode.ai), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [Qwen Code](https://github.com/QwenLM/qwen-code) — with full session continuity, auth checking, and structured error handling.
 
@@ -10,7 +10,7 @@ A production-grade MCP (Model Context Protocol) server exposing **15 tools** tha
 Claude Code  (or Gemini CLI / Qwen Code)
     │  calls tools (MCP stdio)
     ▼
-opencode-mcp server  (this package — auto-started by the MCP client)
+polycode server  (this package — auto-started by the MCP client)
     │
     ├── spawns opencode serve  →  talks to any of 182 models via opencode
     ├── invokes gemini CLI     →  Gemini API with session continuity
@@ -53,13 +53,13 @@ The MCP client (Claude Code, Gemini CLI, Qwen Code) auto-starts this server when
 ## Installation
 
 ```bash
-pip install opencode-mcp
+pip install polycode
 ```
 
 Or without installing (requires `uv`):
 
 ```bash
-uvx opencode-mcp
+uvx polycode
 ```
 
 ---
@@ -73,7 +73,7 @@ All three supported MCP clients use the same config format — only the config f
 {
   "mcpServers": {
     "opencode": {
-      "command": "opencode-mcp",
+      "command": "polycode",
       "env": {
         "OPENCODE_DEFAULT_MODEL": "ollama/qwen3.5:cloud"
       }
@@ -82,12 +82,12 @@ All three supported MCP clients use the same config format — only the config f
 }
 ```
 
-**Windows** — use the full binary path (find it with `where opencode-mcp`):
+**Windows** — use the full binary path (find it with `where polycode`):
 ```json
 {
   "mcpServers": {
     "opencode": {
-      "command": "C:\\Users\\YourName\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\opencode-mcp.exe",
+      "command": "C:\\Users\\YourName\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\polycode.exe",
       "env": {
         "OPENCODE_DEFAULT_MODEL": "ollama/qwen3.5:cloud"
       }
@@ -316,7 +316,7 @@ List saved Gemini CLI sessions for the current project.
 {
   "sessions": [
     {"raw": "0: [2026-04-05] Remember the word BLUEBIRD"},
-    {"raw": "1: [2026-04-05] Explain the opencode-mcp architecture"}
+    {"raw": "1: [2026-04-05] Explain the polycode architecture"}
   ]
 }
 ```
@@ -458,11 +458,11 @@ Every tool always returns a structured response — never a raw exception:
 
 ## Troubleshooting
 
-### "opencode-mcp not found" on Windows
+### "polycode not found" on Windows
 
 Use the full path in your MCP config. Find it with:
 ```powershell
-where opencode-mcp
+where polycode
 ```
 
 ### opencode server times out on startup
@@ -474,7 +474,7 @@ Cloud models do a network handshake on first use. Increase the timeout:
 
 ### Tools appear but calls hang
 
-On Windows, subprocesses can inherit a blocked stdin from the MCP stdio pipe. This package sets `stdin=DEVNULL` on all subprocesses — ensure you are on `opencode-mcp >= 0.1.0`.
+On Windows, subprocesses can inherit a blocked stdin from the MCP stdio pipe. This package sets `stdin=DEVNULL` on all subprocesses — ensure you are on `polycode >= 0.1.0`.
 
 ### gemini_prompt or qwen_prompt returns an auth error
 
@@ -489,8 +489,8 @@ Then authenticate interactively (`gemini` or `qwen auth qwen-oauth`) and retry.
 ## Running Tests
 
 ```bash
-git clone https://github.com/h19overflow/opencode-mcp
-cd opencode-mcp
+git clone https://github.com/h19overflow/polycode
+cd polycode
 pip install -e ".[dev]"
 
 # Unit tests — no CLIs required

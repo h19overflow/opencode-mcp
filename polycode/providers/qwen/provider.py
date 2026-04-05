@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from opencode_mcp.providers.base import BaseProvider
-from opencode_mcp.providers.qwen import runner
+from polycode.providers.base import BaseProvider
+from polycode.providers.qwen import runner
 
 
 class QwenProvider(BaseProvider):
@@ -60,5 +60,5 @@ class QwenProvider(BaseProvider):
         }
 
     def register(self, mcp: Any, **kwargs: Any) -> None:
-        from opencode_mcp.providers.qwen.router import register
+        from polycode.providers.qwen.router import register
         register(mcp)

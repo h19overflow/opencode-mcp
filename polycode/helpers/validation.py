@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from opencode_mcp.errors import OpencodeValidationError
+from polycode.errors import OpencodeValidationError
 
 
 def validate_model_format(model: str) -> None:

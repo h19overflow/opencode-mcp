@@ -4,18 +4,18 @@ import asyncio
 import logging
 from typing import Any
 
-from opencode_mcp.core.client import OpencodeClient
-from opencode_mcp.core.process import OpencodeProcess
-from opencode_mcp.helpers.cli_runner import (
+from polycode.core.client import OpencodeClient
+from polycode.core.process import OpencodeProcess
+from polycode.helpers.cli_runner import (
     check_gemini_auth,
     check_qwen_auth,
     list_gemini_sessions,
     run_gemini_prompt,
     run_qwen_prompt,
 )
-from opencode_mcp.helpers.models import list_all_models
-from opencode_mcp.helpers.validation import validate_model_format
-from opencode_mcp.session_manager import SessionManager
+from polycode.helpers.models import list_all_models
+from polycode.helpers.validation import validate_model_format
+from polycode.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 

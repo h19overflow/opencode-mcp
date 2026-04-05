@@ -1,9 +1,9 @@
 # tests/conftest.py
 import pytest
 from unittest.mock import AsyncMock
-from opencode_mcp.session_manager import SessionManager
-from opencode_mcp.core.client import OpencodeClient
-from opencode_mcp.core.process import OpencodeProcess
+from polycode.session_manager import SessionManager
+from polycode.core.client import OpencodeClient
+from polycode.core.process import OpencodeProcess
 
 
 @pytest.fixture

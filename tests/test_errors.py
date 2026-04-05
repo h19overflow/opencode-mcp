@@ -1,5 +1,5 @@
 import pytest
-from opencode_mcp.errors import (
+from polycode.errors import (
     OpencodeError,
     OpencodeBinaryNotFoundError,
     OpencodePortError,

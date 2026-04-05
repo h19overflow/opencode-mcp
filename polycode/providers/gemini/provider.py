@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from opencode_mcp.providers.base import BaseProvider
-from opencode_mcp.providers.gemini import runner
+from polycode.providers.base import BaseProvider
+from polycode.providers.gemini import runner
 
 
 class GeminiProvider(BaseProvider):
@@ -75,5 +75,5 @@ class GeminiProvider(BaseProvider):
         return runner.list_sessions(project_dir=project_dir, timeout=timeout)
 
     def register(self, mcp: Any, **kwargs: Any) -> None:
-        from opencode_mcp.providers.gemini.router import register
+        from polycode.providers.gemini.router import register
         register(mcp)

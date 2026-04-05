@@ -5,8 +5,8 @@ from typing import Any
 
 from pydantic import Field
 
-from opencode_mcp.errors import OpencodeError, format_error
-from opencode_mcp.tools import (
+from polycode.errors import OpencodeError, format_error
+from polycode.tools import (
     handle_gemini_check_auth,
     handle_gemini_list_sessions,
     handle_gemini_prompt,

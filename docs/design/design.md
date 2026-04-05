@@ -1,14 +1,14 @@
-# opencode-mcp Design Spec
+# polycode Design Spec
 
 **Date:** 2026-04-05  
 **Status:** Approved  
-**Location:** `C:\Users\User\publicprojects\opencode-mcp\`
+**Location:** `C:\Users\User\publicprojects\polycode\`
 
 ---
 
 ## 1. Purpose
 
-`opencode-mcp` is a production-grade MCP (Model Context Protocol) server that wraps the `opencode` CLI tool's headless HTTP server. It allows Claude Code (or any MCP client) to programmatically start sessions, send multi-turn prompts, and receive responses from any opencode-supported model — defaulting to `ollama/qwen3.5:cloud`.
+`polycode` is a production-grade MCP (Model Context Protocol) server that wraps the `opencode` CLI tool's headless HTTP server. It allows Claude Code (or any MCP client) to programmatically start sessions, send multi-turn prompts, and receive responses from any opencode-supported model — defaulting to `ollama/qwen3.5:cloud`.
 
 ---
 
@@ -19,7 +19,7 @@ MCP Client (Claude Code)
     │
     │  stdio transport (MCP protocol)
     ▼
-opencode-mcp server (Python)
+polycode server (Python)
     ├── tools.py          — MCP tool definitions + handlers
     ├── session_manager.py — session registry + history
     ├── opencode_client.py — async HTTP client for opencode REST API
@@ -197,8 +197,8 @@ All configuration via environment variables:
 ## 6. Project Structure
 
 ```
-publicprojects/opencode-mcp/
-├── opencode_mcp/
+publicprojects/polycode/
+├── polycode/
 │   ├── __init__.py
 │   ├── server.py              # MCP server entrypoint (stdio transport)
 │   ├── opencode_process.py    # opencode subprocess lifecycle manager
@@ -224,9 +224,9 @@ publicprojects/opencode-mcp/
 ### For users
 
 ```bash
-pip install opencode-mcp
+pip install polycode
 # or (no install needed)
-uvx opencode-mcp
+uvx polycode
 ```
 
 Requires: `opencode` on PATH (`npm install -g opencode-ai`), Python 3.11+.
@@ -237,7 +237,7 @@ Requires: `opencode` on PATH (`npm install -g opencode-ai`), Python 3.11+.
 {
   "mcpServers": {
     "opencode": {
-      "command": "opencode-mcp",
+      "command": "polycode",
       "env": {
         "OPENCODE_DEFAULT_MODEL": "ollama/qwen3.5:cloud"
       }
@@ -275,6 +275,6 @@ Requires: `opencode` on PATH (`npm install -g opencode-ai`), Python 3.11+.
 - [ ] Claude Code can start a session, send 3+ messages, and receive coherent responses
 - [ ] All 8 MCP tools are callable and return structured output
 - [ ] Every error scenario in section 4 returns a structured error (not a raw exception)
-- [ ] `pip install opencode-mcp` + MCP config is the only setup a new user needs
+- [ ] `pip install polycode` + MCP config is the only setup a new user needs
 - [ ] Unit tests pass without opencode installed
 - [ ] Integration tests pass with `opencode` on PATH and `ollama/qwen3.5:cloud` available

@@ -5,7 +5,7 @@ import shutil
 import subprocess
 from typing import Any
 
-from opencode_mcp.errors import (
+from polycode.errors import (
     OpencodeBinaryNotFoundError,
     OpencodeTimeoutError,
     OpencodeProtocolError,

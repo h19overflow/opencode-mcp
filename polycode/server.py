@@ -7,14 +7,14 @@ from typing import Any
 import fastmcp
 from pydantic import Field
 
-from opencode_mcp.errors import OpencodeError, format_error
-from opencode_mcp.providers.gemini.provider import GeminiProvider
-from opencode_mcp.providers.opencode.client import OpencodeClient
-from opencode_mcp.providers.opencode.process import OpencodeProcess
-from opencode_mcp.providers.opencode.provider import OpencodeProvider
-from opencode_mcp.providers.qwen.provider import QwenProvider
-from opencode_mcp.session_manager import SessionManager
-from opencode_mcp.tools import handle_shutdown
+from polycode.errors import OpencodeError, format_error
+from polycode.providers.gemini.provider import GeminiProvider
+from polycode.providers.opencode.client import OpencodeClient
+from polycode.providers.opencode.process import OpencodeProcess
+from polycode.providers.opencode.provider import OpencodeProvider
+from polycode.providers.qwen.provider import QwenProvider
+from polycode.session_manager import SessionManager
+from polycode.tools import handle_shutdown
 
 logging.basicConfig(
     level=os.getenv("OPENCODE_LOG_LEVEL", "INFO"),
@@ -27,7 +27,7 @@ PORT = int(os.getenv("OPENCODE_PORT", "0"))
 STARTUP_TIMEOUT = float(os.getenv("OPENCODE_STARTUP_TIMEOUT", "10"))
 REQUEST_TIMEOUT = float(os.getenv("OPENCODE_REQUEST_TIMEOUT", "120"))
 
-mcp = fastmcp.FastMCP("opencode-mcp")
+mcp = fastmcp.FastMCP("polycode")
 
 # Shared state
 _process = OpencodeProcess(model=DEFAULT_MODEL, port=PORT, startup_timeout=STARTUP_TIMEOUT)

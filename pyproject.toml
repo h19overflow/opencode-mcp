@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "opencode-mcp"
+name = "polycode"
 version = "0.1.0"
-description = "MCP server wrapping opencode's headless HTTP server"
+description = "Multi-provider MCP server — control opencode, Gemini CLI, and Qwen Code from any MCP client"
 license = { text = "MIT" }
 authors = [
     { name = "h19overflow" },
@@ -26,7 +26,7 @@ dependencies = [
 ]
 
 [project.scripts]
-opencode-mcp = "opencode_mcp.server:main"
+polycode = "polycode.server:main"
 
 [project.optional-dependencies]
 dev = [
@@ -45,4 +45,4 @@ markers = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["opencode_mcp"]
+packages = ["polycode"]

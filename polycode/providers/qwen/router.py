@@ -5,8 +5,8 @@ from typing import Any
 
 from pydantic import Field
 
-from opencode_mcp.errors import OpencodeError, format_error
-from opencode_mcp.tools import (
+from polycode.errors import OpencodeError, format_error
+from polycode.tools import (
     handle_qwen_check_auth,
     handle_qwen_prompt,
 )

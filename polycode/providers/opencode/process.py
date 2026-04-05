@@ -9,7 +9,7 @@ from asyncio.subprocess import Process
 
 import httpx
 
-from opencode_mcp.errors import (
+from polycode.errors import (
     OpencodeBinaryNotFoundError,
     OpencodeStartupError,
 )

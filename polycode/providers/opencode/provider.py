@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from opencode_mcp.helpers.models import list_all_models
-from opencode_mcp.providers.base import BaseProvider
+from polycode.helpers.models import list_all_models
+from polycode.providers.base import BaseProvider
 
 
 class OpencodeProvider(BaseProvider):
@@ -57,5 +57,5 @@ class OpencodeProvider(BaseProvider):
 
     def register(self, mcp: Any, **kwargs: Any) -> None:
         """Register opencode_* tools onto the FastMCP instance."""
-        from opencode_mcp.providers.opencode.router import register
+        from polycode.providers.opencode.router import register
         register(mcp, **kwargs)

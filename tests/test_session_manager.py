@@ -1,6 +1,6 @@
 import pytest
-from opencode_mcp.session_manager import SessionManager, Session
-from opencode_mcp.errors import OpencodeSessionError
+from polycode.session_manager import SessionManager, Session
+from polycode.errors import OpencodeSessionError
 
 
 def test_create_session_returns_session():
