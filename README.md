@@ -110,7 +110,7 @@ Restart your MCP client after saving. All 15 tools appear automatically.
 
 ### opencode tools (8)
 
-These tools control opencode's headless HTTP server. Sessions are stateful — messages within a session share full context.
+These tools control opencode — a multi-provider AI coding agent. Sessions are stateful — messages within a session share full context across any of the 180+ supported models.
 
 ---
 
