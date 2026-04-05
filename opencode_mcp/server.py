@@ -159,9 +159,14 @@ async def opencode_set_model(
 async def opencode_shutdown() -> dict[str, Any]:
     """Gracefully stop the opencode server and close all sessions."""
     global _client
-    result = await handle_shutdown(session_manager=_session_manager, process=_process)
-    _client = None
-    return result
+    try:
+        result = await handle_shutdown(session_manager=_session_manager, process=_process)
+        if _client is not None:
+            await _client.aclose()
+            _client = None
+        return result
+    except OpencodeError as err:
+        return _wrap_error(err)
 
 
 def main() -> None:

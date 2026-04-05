@@ -51,7 +51,7 @@ async def handle_send_message(
     logger.info("Sending message to session %s", session_id)
     session_manager.get_session(session_id)
     session_manager.add_message(session_id, role="user", content=message)
-    result = await client.send_message(session_id=session_id, message=message)
+    result = await client.send_message(session_id=session_id, message=message, timeout=float(timeout_seconds))
     session_manager.add_message(session_id, role="assistant", content=result["response"])
     session = session_manager.get_session(session_id)
     result["message_index"] = session.message_count - 1

@@ -55,6 +55,7 @@ class OpencodeClient:
         session_id: str,
         message: str,
         model: str | None = None,
+        timeout: float | None = None,
     ) -> dict[str, Any]:
         payload: dict[str, Any] = {
             "parts": [{"type": "text", "text": message}],
@@ -63,7 +64,11 @@ class OpencodeClient:
             payload["model"] = model
 
         try:
-            response = await self._client.post(f"/session/{session_id}/message", json=payload)
+            response = await self._client.post(
+                f"/session/{session_id}/message",
+                json=payload,
+                timeout=timeout if timeout is not None else self._timeout,
+            )
             response.raise_for_status()
             data = response.json()
         except httpx.TimeoutException as exc:
