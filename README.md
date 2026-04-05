@@ -1,51 +1,52 @@
 # opencode-mcp
 
-A production-grade MCP (Model Context Protocol) server that lets Claude Code (or any MCP client) control [opencode](https://opencode.ai) — an AI coding agent — programmatically. Start sessions, send multi-turn prompts, and get responses back as structured tool results.
-
-**Default model:** `ollama/qwen3.5:cloud`  
-**Supports:** Any model opencode supports — Ollama, OpenAI, Anthropic, Gemini, and 70+ others.
+A production-grade MCP (Model Context Protocol) server exposing **15 tools** that let Claude Code (or any MCP client) control three AI coding agents — [opencode](https://opencode.ai), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [Qwen Code](https://github.com/QwenLM/qwen-code) — with full session continuity, auth checking, and structured error handling.
 
 ---
 
 ## How It Works
 
 ```
-Claude Code
+Claude Code  (or Gemini CLI / Qwen Code)
     │  calls tools (MCP stdio)
     ▼
-opencode-mcp server  (this package — auto-started by Claude Code)
-    │  spawns + manages
-    ▼
-opencode serve  (headless HTTP server)
-    │  sends prompts to
-    ▼
-ollama/qwen3.5:cloud  (or any model)
+opencode-mcp server  (this package — auto-started by the MCP client)
+    │
+    ├── spawns opencode serve  →  talks to any of 182 models via opencode
+    ├── invokes gemini CLI     →  Gemini API with session continuity
+    └── invokes qwen CLI       →  Qwen API with session continuity
 ```
 
-You talk to Claude Code. Claude Code auto-starts this MCP server when needed, which in turn spawns the opencode HTTP server. You never start anything manually.
+The MCP client (Claude Code, Gemini CLI, Qwen Code) auto-starts this server when the session begins. You never start it manually.
 
 ---
 
 ## Requirements
 
-Before installing, you need:
-
 1. **Python 3.11+**
    ```bash
-   python --version  # must be 3.11 or higher
+   python --version
    ```
 
-2. **opencode CLI**
+2. **opencode CLI** — for the `opencode_*` tools
    ```bash
    npm install -g opencode-ai
-   opencode --version  # verify: should print 1.x.x
+   opencode --version  # should print 1.x.x
    ```
 
-3. **A model provider** — for `ollama/qwen3.5:cloud` (the default), Ollama must be running locally:
+3. **Gemini CLI** — for the `gemini_*` tools _(optional)_
    ```bash
-   ollama list  # should show your installed models
+   npm install -g @google/gemini-cli
+   gemini --version  # should print 0.36.x or higher
    ```
-   To use OpenAI, Anthropic, or another provider instead, see [Changing the Model](#changing-the-model).
+
+4. **Qwen Code CLI** — for the `qwen_*` tools _(optional)_
+   ```bash
+   npm install -g @qwen-code/qwen-code
+   qwen --version  # should print 0.14.x or higher
+   ```
+
+5. **A model provider for opencode** — for the default `ollama/qwen3.5:cloud`, Ollama must be running locally. See [Changing the Model](#changing-the-opencode-model) for alternatives.
 
 ---
 
@@ -61,28 +62,11 @@ Or without installing (requires `uv`):
 uvx opencode-mcp
 ```
 
-Verify it works:
-
-```bash
-opencode-mcp --help
-```
-
 ---
 
-## Claude Code Setup
+## MCP Client Setup
 
-Claude Code automatically starts and stops the MCP server — you never run it manually. All you do is register it once in your config.
-
-### Step 1 — Find your Claude config file
-
-| Platform | Path |
-|----------|------|
-| Windows | `C:\Users\<you>\.claude.json` |
-| macOS / Linux | `~/.claude.json` |
-
-### Step 2 — Add the MCP server
-
-Open `~/.claude.json` and add an `mcpServers` entry. If the key doesn't exist yet, create it.
+All three supported MCP clients use the same config format — only the config file path differs.
 
 **macOS / Linux:**
 ```json
@@ -98,7 +82,7 @@ Open `~/.claude.json` and add an `mcpServers` entry. If the key doesn't exist ye
 }
 ```
 
-**Windows** — use the full path to the binary (find it with `where opencode-mcp`):
+**Windows** — use the full binary path (find it with `where opencode-mcp`):
 ```json
 {
   "mcpServers": {
@@ -112,121 +96,30 @@ Open `~/.claude.json` and add an `mcpServers` entry. If the key doesn't exist ye
 }
 ```
 
-### Step 3 — Restart Claude Code
+| MCP Client | Config file |
+|------------|-------------|
+| **Claude Code** | `~/.claude.json` |
+| **Gemini CLI** | `~/.gemini/settings.json` |
+| **Qwen Code** | `~/.qwen/settings.json` |
 
-The 8 `opencode_*` tools will appear automatically. From that point on:
-- Claude Code starts `opencode-mcp` when the session begins
-- `opencode-mcp` spawns `opencode serve` on first tool call
-- Everything shuts down cleanly when Claude Code exits
-
-You never have to start or stop anything manually.
-
----
-
-## Gemini CLI Setup
-
-**Config file:** `~/.gemini/settings.json` (user-level) or `.gemini/settings.json` (project-level)
-
-**macOS / Linux:**
-```json
-{
-  "mcpServers": {
-    "opencode": {
-      "command": "opencode-mcp",
-      "env": {
-        "OPENCODE_DEFAULT_MODEL": "ollama/qwen3.5:cloud"
-      }
-    }
-  }
-}
-```
-
-**Windows** — use the full path (find it with `where opencode-mcp`):
-```json
-{
-  "mcpServers": {
-    "opencode": {
-      "command": "C:\\Users\\YourName\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\opencode-mcp.exe",
-      "env": {
-        "OPENCODE_DEFAULT_MODEL": "ollama/qwen3.5:cloud"
-      }
-    }
-  }
-}
-```
-
-Restart Gemini CLI after saving. Verify with `/mcp list` — `opencode` should appear as connected.
+Restart your MCP client after saving. All 15 tools appear automatically.
 
 ---
 
-## Qwen Code Setup
+## Tools Reference
 
-**Qwen Code** ([QwenLM/qwen-code](https://github.com/QwenLM/qwen-code)) is Alibaba's coding CLI, a fork of Gemini CLI tuned for Qwen models.
+### opencode tools (8)
 
-**Config file:** `~/.qwen/settings.json` (user-level) or `.qwen/settings.json` (project-level)
-
-**macOS / Linux:**
-```json
-{
-  "mcpServers": {
-    "opencode": {
-      "command": "opencode-mcp",
-      "env": {
-        "OPENCODE_DEFAULT_MODEL": "ollama/qwen3.5:cloud"
-      }
-    }
-  }
-}
-```
-
-**Windows** — use the full path:
-```json
-{
-  "mcpServers": {
-    "opencode": {
-      "command": "C:\\Users\\YourName\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\opencode-mcp.exe",
-      "env": {
-        "OPENCODE_DEFAULT_MODEL": "ollama/qwen3.5:cloud"
-      }
-    }
-  }
-}
-```
-
-Optionally restrict which MCP servers are active with the `mcp.allowed` list:
-```json
-{
-  "mcpServers": { ... },
-  "mcp": {
-    "allowed": ["opencode"]
-  }
-}
-```
-
-Restart Qwen Code after saving. The `opencode_*` tools will appear automatically.
+These tools control opencode's headless HTTP server. Sessions are stateful — messages within a session share full context.
 
 ---
-
-## Using the Tools
-
-### Typical workflow
-
-```
-1. opencode_start_session   → get a session_id
-2. opencode_send_message    → send a prompt, get a response
-3. opencode_send_message    → continue the conversation
-4. opencode_get_history     → review the full exchange
-5. opencode_end_session     → close when done
-```
-
-### All 8 tools
 
 #### `opencode_start_session`
-Start a new opencode session. Returns a `session_id` you use for all subsequent calls.
+Start a new opencode session. Must be called before `opencode_send_message`.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `project_dir` | string | No | Absolute path to your project. Defaults to current working directory. |
+| `project_dir` | string | No | Absolute path to the project. Defaults to current working directory. |
 | `model` | string | No | Model in `provider/model` format. Defaults to `OPENCODE_DEFAULT_MODEL`. |
 
 **Returns:**
@@ -245,9 +138,9 @@ Send a prompt to an active session. Blocks until opencode finishes responding.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `session_id` | string | Yes | Session ID from `opencode_start_session`. |
+| `session_id` | string | Yes | From `opencode_start_session`. |
 | `message` | string | Yes | Your prompt. |
-| `timeout_seconds` | int | No | How long to wait for a response. Default: `120`. |
+| `timeout_seconds` | int | No | Default: `120`. |
 
 **Returns:**
 ```json
@@ -262,7 +155,7 @@ Send a prompt to an active session. Blocks until opencode finishes responding.
 ---
 
 #### `opencode_get_history`
-Retrieve the full message history for a session.
+Retrieve the full message history for a session (tracked in-process).
 
 | Parameter | Type | Required |
 |-----------|------|----------|
@@ -282,7 +175,7 @@ Retrieve the full message history for a session.
 ---
 
 #### `opencode_list_sessions`
-List all active sessions.
+List all active opencode sessions.
 
 **Returns:**
 ```json
@@ -313,12 +206,18 @@ Close a session and free its resources.
 ---
 
 #### `opencode_list_models`
-List all available models from the ollama provider.
+List all models available in opencode across all authenticated providers, grouped by provider. Only providers you are authenticated/connected to will show models.
 
 **Returns:**
 ```json
 {
-  "models": ["ollama/qwen3.5:cloud", "ollama/kimi-k2.5:cloud"],
+  "models": ["ollama/qwen3.5:cloud", "openai/gpt-4o", "google/gemini-2.5-flash", "..."],
+  "by_provider": {
+    "ollama": ["ollama/qwen3.5:cloud", "..."],
+    "openai": ["openai/gpt-4o", "..."],
+    "google": ["google/gemini-2.5-flash", "..."]
+  },
+  "total": 182,
   "default_model": "ollama/qwen3.5:cloud"
 }
 ```
@@ -326,13 +225,13 @@ List all available models from the ollama provider.
 ---
 
 #### `opencode_set_model`
-Change the default model for new sessions. Takes effect immediately for all subsequent `opencode_start_session` calls.
+Change the default model for new sessions (takes effect immediately for all subsequent `opencode_start_session` calls).
 
 | Parameter | Type | Required | Example |
 |-----------|------|----------|---------|
 | `model` | string | Yes | `ollama/qwen3.5:cloud` |
 
-**Returns:** `{"previous_model": "ollama/...", "new_model": "ollama/..."}`
+**Returns:** `{"previous_model": "ollama/...", "new_model": "openai/gpt-4o"}`
 
 ---
 
@@ -343,9 +242,151 @@ Gracefully stop the opencode server and close all active sessions.
 
 ---
 
-## Changing the Model
+### Gemini CLI tools (4)
 
-The model format is `provider/model-name`. Set it via env var in your MCP config:
+These tools invoke the `gemini` CLI directly. Sessions are persisted to disk by the CLI — pass `session_id` to continue a conversation across calls.
+
+**Requires:** `gemini` CLI installed and authenticated (OAuth or `GEMINI_API_KEY`).
+
+---
+
+#### `gemini_check_auth`
+Check whether the Gemini CLI is authenticated before making prompt calls.
+
+| Parameter | Type | Required | Default |
+|-----------|------|----------|---------|
+| `timeout_seconds` | int | No | `15` |
+
+**Returns:**
+```json
+{
+  "authenticated": true,
+  "method": "api_key_or_oauth",
+  "detail": "OK — model: gemini-2.5-flash-lite",
+  "suggestion": ""
+}
+```
+If `authenticated` is `false`, `suggestion` tells you how to fix it.
+
+---
+
+#### `gemini_prompt`
+Send a prompt to Gemini CLI. Returns the response and a `session_id` that can be passed back to continue the conversation.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `prompt` | string | Yes | The prompt to send. |
+| `session_id` | string | No | Resume a previous session. Leave empty to start a new one. |
+| `model` | string | No | E.g. `gemini-2.5-flash`. Defaults to the CLI's configured model. |
+| `timeout_seconds` | int | No | Default: `120`. |
+| `project_dir` | string | No | Working directory. Defaults to current directory. |
+
+**Returns:**
+```json
+{
+  "response": "The word you asked me to remember is BLUEBIRD.",
+  "model": "gemini-2.5-flash-lite",
+  "session_id": "69cfc177-319c-484c-9..."
+}
+```
+
+**Multi-turn example:**
+```
+# Turn 1 — new session
+gemini_prompt(prompt="Remember the word BLUEBIRD")
+→ { session_id: "69cfc177-..." }
+
+# Turn 2 — continue session
+gemini_prompt(prompt="What word did I ask you to remember?", session_id="69cfc177-...")
+→ { response: "BLUEBIRD" }
+```
+
+---
+
+#### `gemini_list_sessions`
+List saved Gemini CLI sessions for the current project.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_dir` | string | No | Defaults to current directory. |
+| `timeout_seconds` | int | No | Default: `10`. |
+
+**Returns:**
+```json
+{
+  "sessions": [
+    {"raw": "0: [2026-04-05] Remember the word BLUEBIRD"},
+    {"raw": "1: [2026-04-05] Explain the opencode-mcp architecture"}
+  ]
+}
+```
+
+---
+
+### Qwen Code CLI tools (3)
+
+These tools invoke the `qwen` CLI directly. Sessions are persisted to disk by the CLI — pass `session_id` to continue a conversation across calls.
+
+**Requires:** `qwen` CLI installed and authenticated (`qwen auth qwen-oauth` or `qwen auth coding-plan`).
+
+---
+
+#### `qwen_check_auth`
+Check whether the Qwen Code CLI is authenticated before making prompt calls.
+
+| Parameter | Type | Required | Default |
+|-----------|------|----------|---------|
+| `timeout_seconds` | int | No | `15` |
+
+**Returns:**
+```json
+{
+  "authenticated": true,
+  "method": "qwen-oauth",
+  "detail": "=== Authentication Status ===\n✓ Authentication Method: Qwen OAuth\n  Type: Free tier",
+  "suggestion": ""
+}
+```
+If `authenticated` is `false`, `suggestion` tells you the exact command to run.
+
+---
+
+#### `qwen_prompt`
+Send a prompt to Qwen Code CLI. Returns the response and a `session_id` that can be passed back to continue the conversation.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `prompt` | string | Yes | The prompt to send. |
+| `session_id` | string | No | Resume a previous session. Leave empty to start a new one. |
+| `model` | string | No | E.g. `qwen-plus`. Defaults to the CLI's configured model. |
+| `timeout_seconds` | int | No | Default: `120`. |
+| `project_dir` | string | No | Working directory. Defaults to current directory. |
+
+**Returns:**
+```json
+{
+  "response": "The word you asked me to remember was REDPANDA.",
+  "model": "coder-model",
+  "session_id": "ead03e7a-afff-4ccd-a..."
+}
+```
+
+**Multi-turn example:**
+```
+# Turn 1 — new session
+qwen_prompt(prompt="Remember the word REDPANDA")
+→ { session_id: "ead03e7a-..." }
+
+# Turn 2 — continue session
+qwen_prompt(prompt="What word did I ask you to remember?", session_id="ead03e7a-...")
+→ { response: "REDPANDA" }
+```
+
+---
+
+## Changing the opencode Model
+
+The model format is `provider/model-name`. Set it via env var:
 
 ```json
 "env": {
@@ -353,32 +394,28 @@ The model format is `provider/model-name`. Set it via env var in your MCP config
 }
 ```
 
-Or call `opencode_set_model` at runtime.
+Or call `opencode_set_model` at runtime. Call `opencode_list_models` to see all 182 available models across your connected providers.
 
 **Common models:**
 
 | Provider | Model string |
 |----------|-------------|
 | Ollama (local) | `ollama/qwen3.5:cloud` |
-| Ollama (local) | `ollama/llama3.2:latest` |
 | OpenAI | `openai/gpt-4o` |
 | Anthropic | `anthropic/claude-sonnet-4-5` |
-| Google | `google/gemini-2.0-flash` |
-
-To see what's available on your ollama installation, call `opencode_list_models`.
+| Google | `google/gemini-2.5-flash` |
+| GitHub Copilot | `github-copilot/claude-sonnet-4.6` |
 
 ---
 
 ## Configuration
 
-All configuration is via environment variables in your MCP config's `env` block:
-
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `OPENCODE_DEFAULT_MODEL` | `ollama/qwen3.5:cloud` | Default model for new sessions |
-| `OPENCODE_PORT` | `0` (random) | Port for the opencode server. `0` picks a free port automatically. |
-| `OPENCODE_STARTUP_TIMEOUT` | `10` | Seconds to wait for opencode to start before giving up |
-| `OPENCODE_REQUEST_TIMEOUT` | `120` | Seconds before a slow generation times out |
+| `OPENCODE_DEFAULT_MODEL` | `ollama/qwen3.5:cloud` | Default model for new opencode sessions |
+| `OPENCODE_PORT` | `0` (random) | Port for the opencode server |
+| `OPENCODE_STARTUP_TIMEOUT` | `10` | Seconds to wait for opencode to start |
+| `OPENCODE_REQUEST_TIMEOUT` | `120` | Seconds before a generation times out |
 | `OPENCODE_LOG_LEVEL` | `INFO` | Log level: `DEBUG`, `INFO`, `WARNING`, `ERROR` |
 | `OPENCODE_SERVER_PASSWORD` | _(unset)_ | Optional HTTP Basic Auth password for the opencode server |
 
@@ -386,30 +423,36 @@ All configuration is via environment variables in your MCP config's `env` block:
 
 ## Error Handling
 
-Every tool always returns a structured response — never a raw exception. If something goes wrong, you get:
+Every tool always returns a structured response — never a raw exception:
 
 ```json
 {
-  "error": "OpencodeModelError",
-  "message": "Model 'bad/model' is not available",
-  "detail": { "attempted_model": "bad/model" },
-  "recoverable": true,
-  "suggestion": "Call opencode_list_models to see available options"
+  "error": "OpencodeBinaryNotFoundError",
+  "message": "gemini CLI not found on PATH. Install: npm install -g @google/gemini-cli",
+  "detail": {},
+  "recoverable": false,
+  "suggestion": "Install opencode via: npm install -g opencode-ai"
 }
 ```
 
-The `recoverable` field tells you whether retrying makes sense. The `suggestion` field tells you what to do next.
+| Field | Description |
+|-------|-------------|
+| `error` | Exception class name |
+| `message` | What went wrong |
+| `detail` | Structured context (stderr, attempted values, etc.) |
+| `recoverable` | Whether retrying makes sense |
+| `suggestion` | Exact next step to fix it |
 
-**Common errors and fixes:**
+**Common errors:**
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `OpencodeBinaryNotFoundError` | `opencode` not on PATH | Run `npm install -g opencode-ai` |
-| `OpencodeStartupError` | opencode failed to start | Check `opencode serve` runs manually; try increasing `OPENCODE_STARTUP_TIMEOUT` |
-| `OpencodeModelError` | Model not available | Call `opencode_list_models` to see what's available |
-| `OpencodeTimeoutError` | Generation took too long | Increase `OPENCODE_REQUEST_TIMEOUT` or simplify your prompt |
+| `OpencodeBinaryNotFoundError` | CLI not on PATH | Install the CLI listed in `suggestion` |
+| `OpencodeStartupError` | opencode failed to start | Increase `OPENCODE_STARTUP_TIMEOUT`; check `opencode serve` manually |
+| `OpencodeTimeoutError` | Generation took too long | Increase `OPENCODE_REQUEST_TIMEOUT` or simplify the prompt |
 | `OpencodeSessionError` | Session ID not found | Call `opencode_list_sessions` to see active sessions |
-| `OpencodeValidationError` | Bad input (e.g. wrong model format) | Model must be `provider/model` — e.g. `ollama/qwen3.5:cloud` |
+| `OpencodeValidationError` | Bad input or auth error | Read the `suggestion` field — includes exact CLI auth command if needed |
+| `OpencodeProtocolError` | Unexpected CLI output shape | Update the CLI to the latest version |
 
 ---
 
@@ -421,39 +464,39 @@ Use the full path in your MCP config. Find it with:
 ```powershell
 where opencode-mcp
 ```
-Then use that full path (with double backslashes) as the `command` value.
 
 ### opencode server times out on startup
 
-The cloud models (`qwen3.5:cloud`, `kimi-k2.5:cloud`) do a network handshake on first request. If startup is slow, increase the timeout:
+Cloud models do a network handshake on first use. Increase the timeout:
 ```json
-"env": {
-  "OPENCODE_STARTUP_TIMEOUT": "30"
-}
+"env": { "OPENCODE_STARTUP_TIMEOUT": "30" }
 ```
 
-### Tools appear but calls hang or time out
+### Tools appear but calls hang
 
-This can happen if the opencode subprocess inherits a blocked stdin. Make sure you're on `opencode-mcp >= 0.1.0` which explicitly sets `stdin=DEVNULL` on all subprocesses — a fix required for Windows MCP stdio environments.
+On Windows, subprocesses can inherit a blocked stdin from the MCP stdio pipe. This package sets `stdin=DEVNULL` on all subprocesses — ensure you are on `opencode-mcp >= 0.1.0`.
 
-### Seeing fewer models than expected
+### gemini_prompt or qwen_prompt returns an auth error
 
-`opencode_list_models` only lists **ollama** models. For OpenAI, Anthropic, or other providers, set the model directly with `opencode_set_model` using the `provider/model` format.
+Run the auth check first:
+- `gemini_check_auth` → reads `suggestion` field for the fix
+- `qwen_check_auth` → reads `suggestion` field for the fix
+
+Then authenticate interactively (`gemini` or `qwen auth qwen-oauth`) and retry.
 
 ---
 
 ## Running Tests
 
 ```bash
-# Clone and install
 git clone https://github.com/h19overflow/opencode-mcp
 cd opencode-mcp
 pip install -e ".[dev]"
 
-# Unit tests — no opencode or ollama required
+# Unit tests — no CLIs required
 pytest tests/ --ignore=tests/test_integration.py -v
 
-# Integration tests — requires opencode + ollama running locally
+# Integration tests — requires opencode + ollama
 pytest tests/test_integration.py -m integration -v
 ```
 
@@ -462,10 +505,11 @@ pytest tests/test_integration.py -m integration -v
 ## Contributing
 
 1. Fork the repo
-2. Install dev deps: `pip install -e ".[dev]"`
+2. `pip install -e ".[dev]"`
 3. Write tests first (TDD)
-4. Run `pytest tests/ --ignore=tests/test_integration.py` before submitting
-5. Open a PR
+4. `pytest tests/ --ignore=tests/test_integration.py` must pass
+5. `pyright .` must show 0 errors
+6. Open a PR
 
 ---
 
