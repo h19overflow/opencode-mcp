@@ -48,6 +48,7 @@ async def handle_send_message(
     session_manager: SessionManager,
     client: OpencodeClient,
 ) -> dict[str, Any]:
+    logger.info("Sending message to session %s", session_id)
     session_manager.get_session(session_id)
     session_manager.add_message(session_id, role="user", content=message)
     result = await client.send_message(session_id=session_id, message=message)
@@ -78,12 +79,38 @@ async def handle_end_session(
     return {"session_id": session_id, "closed": True}
 
 
-async def handle_list_models(client: OpencodeClient) -> dict[str, Any]:
-    result = subprocess.run(
-        ["opencode", "models", "ollama"],
-        capture_output=True, text=True, timeout=10,
-    )
-    models = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+def _run_opencode_models_command() -> list[str]:
+    try:
+        result = subprocess.run(
+            ["opencode", "models", "ollama"],
+            capture_output=True, text=True, timeout=10,
+        )
+    except FileNotFoundError as error:
+        raise OpencodeValidationError(
+            message="opencode binary not found on PATH",
+            detail={"binary": "opencode"},
+            recoverable=False,
+            suggestion="Ensure opencode is installed: npm install -g opencode-ai",
+        ) from error
+    except subprocess.TimeoutExpired as error:
+        raise OpencodeValidationError(
+            message="opencode models command timed out after 10 seconds",
+            detail={},
+            recoverable=True,
+            suggestion="Retry or check if opencode is responsive.",
+        ) from error
+    if result.returncode != 0:
+        raise OpencodeValidationError(
+            message=f"opencode models command failed with exit code {result.returncode}",
+            detail={"stderr": result.stderr},
+            recoverable=False,
+            suggestion="Check opencode installation or run 'opencode models ollama' manually.",
+        )
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+async def handle_list_models() -> dict[str, Any]:
+    models = _run_opencode_models_command()
     return {"models": models}
 
 

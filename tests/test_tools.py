@@ -125,3 +125,38 @@ async def test_shutdown_stops_process_and_closes_sessions(session_manager, mock_
     assert result["stopped"] is True
     assert result["sessions_closed"] == 1
     mock_process.stop.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_list_models_returns_models(monkeypatch):
+    def fake_run(*args, **kwargs):
+        class FakeResult:
+            returncode = 0
+            stdout = "ollama/qwen3.5:cloud\nollama/gemma4:e4b\n"
+            stderr = ""
+        return FakeResult()
+    monkeypatch.setattr("opencode_mcp.tools.subprocess.run", fake_run)
+    result = await handle_list_models()
+    assert "ollama/qwen3.5:cloud" in result["models"]
+
+
+@pytest.mark.asyncio
+async def test_list_models_raises_on_missing_binary(monkeypatch):
+    def fake_run(*args, **kwargs):
+        raise FileNotFoundError("opencode not found")
+    monkeypatch.setattr("opencode_mcp.tools.subprocess.run", fake_run)
+    with pytest.raises(OpencodeValidationError):
+        await handle_list_models()
+
+
+@pytest.mark.asyncio
+async def test_list_models_raises_on_nonzero_exit(monkeypatch):
+    def fake_run(*args, **kwargs):
+        class FakeResult:
+            returncode = 1
+            stdout = ""
+            stderr = "some error"
+        return FakeResult()
+    monkeypatch.setattr("opencode_mcp.tools.subprocess.run", fake_run)
+    with pytest.raises(OpencodeValidationError):
+        await handle_list_models()
