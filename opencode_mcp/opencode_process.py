@@ -94,6 +94,7 @@ class OpencodeProcess:
         self._process = await asyncio.create_subprocess_exec(
             *cmd,
             env=env,
+            stdin=asyncio.subprocess.DEVNULL,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )

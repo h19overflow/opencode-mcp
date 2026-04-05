@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import subprocess
 from typing import Any
@@ -83,7 +84,8 @@ def _run_opencode_models_command() -> list[str]:
     try:
         result = subprocess.run(
             ["opencode", "models", "ollama"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True, text=True, timeout=30,
+            stdin=subprocess.DEVNULL,
         )
     except FileNotFoundError as error:
         raise OpencodeValidationError(
@@ -94,7 +96,7 @@ def _run_opencode_models_command() -> list[str]:
         ) from error
     except subprocess.TimeoutExpired as error:
         raise OpencodeValidationError(
-            message="opencode models command timed out after 10 seconds",
+            message="opencode models command timed out after 30 seconds",
             detail={},
             recoverable=True,
             suggestion="Retry or check if opencode is responsive.",
@@ -110,7 +112,8 @@ def _run_opencode_models_command() -> list[str]:
 
 
 async def handle_list_models() -> dict[str, Any]:
-    models = _run_opencode_models_command()
+    loop = asyncio.get_running_loop()
+    models = await loop.run_in_executor(None, _run_opencode_models_command)
     return {"models": models}
 
 
