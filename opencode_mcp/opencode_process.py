@@ -4,6 +4,7 @@ import asyncio
 import logging
 import os
 import shutil
+import time
 from asyncio.subprocess import Process
 
 import httpx
@@ -59,7 +60,7 @@ class OpencodeProcess:
         try:
             self._process.terminate()
             await asyncio.wait_for(self._process.wait(), timeout=5.0)
-        except Exception:
+        except asyncio.TimeoutError:
             self._process.kill()
         finally:
             self._process = None
@@ -99,12 +100,12 @@ class OpencodeProcess:
         self._port = port
 
     async def _wait_for_healthy(self) -> None:
-        deadline = asyncio.get_event_loop().time() + self._startup_timeout
+        deadline = time.monotonic() + self._startup_timeout
         url = f"{self.base_url}/global/health"
         auth = self.auth
 
         async with httpx.AsyncClient() as client:
-            while asyncio.get_event_loop().time() < deadline:
+            while time.monotonic() < deadline:
                 if self._process and self._process.returncode is not None:
                     stderr = b""
                     if self._process.stderr:
