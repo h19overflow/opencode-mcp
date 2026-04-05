@@ -6,7 +6,42 @@
 
 **Architecture:** A Python package (`opencode_mcp`) with five focused modules: process lifecycle manager, async HTTP client, session registry, tool handlers, and FastMCP server entrypoint. The MCP server spawns one `opencode serve` process at startup and proxies all tool calls to its REST API via httpx.
 
-**Tech Stack:** Python 3.11+, fastmcp, httpx, pydantic v2, pytest + pytest-asyncio, opencode CLI v1.3.15+
+**Tech Stack:** Python 3.11+, fastmcp, httpx, pydantic v2, pytest + pytest-asyncio, respx, opencode CLI v1.3.15+
+
+**Repo:** https://github.com/h19overflow/opencode-mcp  
+**Working dir:** `C:\Users\User\publicprojects\opencode-mcp`  
+**Branch strategy:** `main` branch, one commit per task, push after each task.
+
+---
+
+## Task Dependency Graph
+
+```
+Task 1 (Scaffold)
+    └── Task 2 (Errors)
+            └── Task 3 (Session Manager)
+            └── Task 4 (Process Manager)
+            └── Task 5 (HTTP Client)
+                    └── Task 6 (Tool Handlers)  ← depends on 3+4+5
+                            └── Task 7 (FastMCP Server)
+                                    └── Task 8 (Integration Tests)
+                                            └── Task 9 (README)
+```
+
+Tasks 3, 4, 5 can run in parallel after Task 2.  
+Task 6 requires Tasks 3, 4, 5 complete.
+
+---
+
+## Pre-flight Checks (run before starting)
+
+```bash
+cd /c/Users/User/publicprojects/opencode-mcp
+python --version          # must be 3.11+
+opencode --version        # must be present
+ollama list               # verify ollama is running
+git remote -v             # must show h19overflow/opencode-mcp
+```
 
 ---
 
