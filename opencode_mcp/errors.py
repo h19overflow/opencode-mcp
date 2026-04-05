@@ -1,5 +1,15 @@
 from __future__ import annotations
 
+from typing import Any, TypedDict
+
+
+class FormattedError(TypedDict):
+    error: str
+    message: str
+    detail: dict[str, Any]
+    recoverable: bool
+    suggestion: str
+
 
 class OpencodeError(Exception):
     def __init__(
@@ -69,7 +79,7 @@ class OpencodeProtocolError(OpencodeError):
     pass
 
 
-def format_error(err: OpencodeError) -> dict:
+def format_error(err: OpencodeError) -> FormattedError:
     return {
         "error": type(err).__name__,
         "message": err.message,
