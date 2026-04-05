@@ -2,25 +2,15 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import subprocess
 from typing import Any
 
-from opencode_mcp.errors import OpencodeValidationError
-from opencode_mcp.opencode_client import OpencodeClient
-from opencode_mcp.opencode_process import OpencodeProcess
+from opencode_mcp.core.client import OpencodeClient
+from opencode_mcp.core.process import OpencodeProcess
+from opencode_mcp.helpers.models import list_all_models
+from opencode_mcp.helpers.validation import validate_model_format
 from opencode_mcp.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
-
-
-def _validate_model_format(model: str) -> None:
-    if "/" not in model or len(model.split("/")) != 2:
-        raise OpencodeValidationError(
-            message=f"model must be in format 'provider/model', got: '{model}'",
-            detail={"provided": model},
-            recoverable=True,
-            suggestion="Example: 'ollama/qwen3.5:cloud'. Call opencode_list_models to see valid options.",
-        )
 
 
 async def handle_start_session(
@@ -31,7 +21,7 @@ async def handle_start_session(
     process: OpencodeProcess,
     default_model: str,
 ) -> dict[str, Any]:
-    _validate_model_format(model)
+    validate_model_format(model)
     opencode_session_id = await client.create_session()
     session_manager.create_session(
         session_id=opencode_session_id,
@@ -80,53 +70,13 @@ async def handle_end_session(
     return {"session_id": session_id, "closed": True}
 
 
-def _run_opencode_models_command() -> dict[str, list[str]]:
-    try:
-        result = subprocess.run(
-            ["opencode", "models"],
-            capture_output=True, text=True, timeout=30,
-            stdin=subprocess.DEVNULL,
-        )
-    except FileNotFoundError as error:
-        raise OpencodeValidationError(
-            message="opencode binary not found on PATH",
-            detail={"binary": "opencode"},
-            recoverable=False,
-            suggestion="Ensure opencode is installed: npm install -g opencode-ai",
-        ) from error
-    except subprocess.TimeoutExpired as error:
-        raise OpencodeValidationError(
-            message="opencode models command timed out after 30 seconds",
-            detail={},
-            recoverable=True,
-            suggestion="Retry or check if opencode is responsive.",
-        ) from error
-    if result.returncode != 0:
-        raise OpencodeValidationError(
-            message=f"opencode models command failed with exit code {result.returncode}",
-            detail={"stderr": result.stderr},
-            recoverable=False,
-            suggestion="Check opencode installation or run 'opencode models' manually.",
-        )
-    grouped: dict[str, list[str]] = {}
-    for line in result.stdout.splitlines():
-        model = line.strip()
-        if not model:
-            continue
-        provider = model.split("/")[0] if "/" in model else "other"
-        grouped.setdefault(provider, []).append(model)
-    return grouped
-
-
 async def handle_list_models() -> dict[str, Any]:
     loop = asyncio.get_running_loop()
-    grouped = await loop.run_in_executor(None, _run_opencode_models_command)
-    all_models = [m for models in grouped.values() for m in models]
-    return {"models": all_models, "by_provider": grouped, "total": len(all_models)}
+    return await loop.run_in_executor(None, list_all_models)
 
 
 async def handle_set_model(model: str, state: dict[str, Any]) -> dict[str, Any]:
-    _validate_model_format(model)
+    validate_model_format(model)
     previous = state["default_model"]
     state["default_model"] = model
     logger.info("Default model changed from %s to %s", previous, model)

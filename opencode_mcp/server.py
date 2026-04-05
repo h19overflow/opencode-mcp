@@ -7,9 +7,9 @@ from typing import Any
 import fastmcp
 from pydantic import Field
 
+from opencode_mcp.core.client import OpencodeClient
+from opencode_mcp.core.process import OpencodeProcess
 from opencode_mcp.errors import OpencodeError, format_error
-from opencode_mcp.opencode_client import OpencodeClient
-from opencode_mcp.opencode_process import OpencodeProcess
 from opencode_mcp.session_manager import SessionManager
 from opencode_mcp.tools import (
     handle_end_session,

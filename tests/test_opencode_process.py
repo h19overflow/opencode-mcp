@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from opencode_mcp.opencode_process import OpencodeProcess
+from opencode_mcp.core.process import OpencodeProcess
 from opencode_mcp.errors import OpencodeBinaryNotFoundError, OpencodeStartupError
 
 
@@ -11,14 +11,14 @@ def process():
 
 @pytest.mark.asyncio
 async def test_raises_binary_not_found_when_opencode_missing(process):
-    with patch("opencode_mcp.opencode_process.shutil.which", return_value=None):
+    with patch("opencode_mcp.core.process.shutil.which", return_value=None):
         with pytest.raises(OpencodeBinaryNotFoundError):
             await process.start()
 
 
 @pytest.mark.asyncio
 async def test_raises_startup_error_when_health_check_fails(process):
-    with patch("opencode_mcp.opencode_process.shutil.which", return_value="/usr/bin/opencode"):
+    with patch("opencode_mcp.core.process.shutil.which", return_value="/usr/bin/opencode"):
         with patch("asyncio.create_subprocess_exec", new_callable=AsyncMock) as mock_proc:
             mock_proc.return_value = MagicMock(returncode=None)
             with patch.object(process, "_wait_for_healthy", side_effect=OpencodeStartupError("Timed out")):

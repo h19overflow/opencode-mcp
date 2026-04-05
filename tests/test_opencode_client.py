@@ -1,7 +1,7 @@
 import pytest
 import respx
 import httpx
-from opencode_mcp.opencode_client import OpencodeClient
+from opencode_mcp.core.client import OpencodeClient
 from opencode_mcp.errors import OpencodeProtocolError, OpencodeTimeoutError
 
 

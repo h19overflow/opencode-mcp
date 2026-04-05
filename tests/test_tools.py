@@ -135,7 +135,7 @@ async def test_list_models_returns_models_grouped_by_provider(monkeypatch):
             stdout = "ollama/qwen3.5:cloud\nollama/gemma4:e4b\nopenai/gpt-4o\ngoogle/gemini-2.5-flash\n"
             stderr = ""
         return FakeResult()
-    monkeypatch.setattr("opencode_mcp.tools.subprocess.run", fake_run)
+    monkeypatch.setattr("opencode_mcp.helpers.models.subprocess.run", fake_run)
     result = await handle_list_models()
     assert "ollama/qwen3.5:cloud" in result["models"]
     assert result["total"] == 4
@@ -153,7 +153,7 @@ async def test_list_models_returns_empty_when_no_providers_connected(monkeypatch
             stdout = ""
             stderr = ""
         return FakeResult()
-    monkeypatch.setattr("opencode_mcp.tools.subprocess.run", fake_run)
+    monkeypatch.setattr("opencode_mcp.helpers.models.subprocess.run", fake_run)
     result = await handle_list_models()
     assert result["models"] == []
     assert result["total"] == 0
@@ -164,7 +164,7 @@ async def test_list_models_returns_empty_when_no_providers_connected(monkeypatch
 async def test_list_models_raises_on_missing_binary(monkeypatch):
     def fake_run(*args, **kwargs):
         raise FileNotFoundError("opencode not found")
-    monkeypatch.setattr("opencode_mcp.tools.subprocess.run", fake_run)
+    monkeypatch.setattr("opencode_mcp.helpers.models.subprocess.run", fake_run)
     with pytest.raises(OpencodeValidationError):
         await handle_list_models()
 
@@ -177,6 +177,6 @@ async def test_list_models_raises_on_nonzero_exit(monkeypatch):
             stdout = ""
             stderr = "some error"
         return FakeResult()
-    monkeypatch.setattr("opencode_mcp.tools.subprocess.run", fake_run)
+    monkeypatch.setattr("opencode_mcp.helpers.models.subprocess.run", fake_run)
     with pytest.raises(OpencodeValidationError):
         await handle_list_models()

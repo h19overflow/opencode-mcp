@@ -2,8 +2,8 @@
 import pytest
 from unittest.mock import AsyncMock
 from opencode_mcp.session_manager import SessionManager
-from opencode_mcp.opencode_client import OpencodeClient
-from opencode_mcp.opencode_process import OpencodeProcess
+from opencode_mcp.core.client import OpencodeClient
+from opencode_mcp.core.process import OpencodeProcess
 
 
 @pytest.fixture
