@@ -1,0 +1,233 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d1117;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#161b22;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Title text gradient: purple → blue → cyan -->
+    <linearGradient id="titleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="50%"  style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Animated glow gradient (wider, shifting) -->
+    <linearGradient id="glowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   style="stop-color:#7c3aed;stop-opacity:0.0">
+        <animate attributeName="stop-opacity" values="0;0.6;0" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="35%"  style="stop-color:#3b82f6;stop-opacity:0.0">
+        <animate attributeName="stop-opacity" values="0;0.8;0" dur="3s" begin="0.3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="65%"  style="stop-color:#06b6d4;stop-opacity:0.0">
+        <animate attributeName="stop-opacity" values="0;0.8;0" dur="3s" begin="0.6s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:0.0">
+        <animate attributeName="stop-opacity" values="0;0.6;0" dur="3s" begin="0.9s" repeatCount="indefinite" />
+      </stop>
+    </linearGradient>
+
+    <!-- Glow filter for title -->
+    <filter id="titleGlow" x="-10%" y="-50%" width="120%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Subtle glow for dots -->
+    <filter id="dotGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Grid pattern for background texture -->
+    <pattern id="gridPattern" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#21262d" stroke-width="0.5" />
+    </pattern>
+
+    <!-- Clip for the whole SVG -->
+    <clipPath id="svgClip">
+      <rect width="1200" height="300" rx="12" ry="12" />
+    </clipPath>
+  </defs>
+
+  <!-- Root group with clip -->
+  <g clip-path="url(#svgClip)">
+
+    <!-- Background fill -->
+    <rect width="1200" height="300" fill="url(#bgGradient)" />
+
+    <!-- Grid texture overlay -->
+    <rect width="1200" height="300" fill="url(#gridPattern)" opacity="0.5" />
+
+    <!-- Accent glow band (animated) behind title -->
+    <rect x="0" y="30" width="820" height="180" fill="url(#glowGradient)" opacity="0.12" rx="4" />
+
+    <!-- Left edge accent bar -->
+    <rect x="0" y="0" width="4" height="300" fill="url(#titleGradient)" />
+
+    <!-- ─────────────────────────────────────────
+         MAIN TITLE: "polycode"
+    ───────────────────────────────────────── -->
+
+    <!-- Glow layer (blurred duplicate) -->
+    <text
+      x="72"
+      y="152"
+      font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif"
+      font-size="108"
+      font-weight="800"
+      letter-spacing="-3"
+      fill="url(#titleGradient)"
+      opacity="0.35"
+      filter="url(#titleGlow)"
+    >polycode</text>
+
+    <!-- Main text -->
+    <text
+      x="72"
+      y="152"
+      font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif"
+      font-size="108"
+      font-weight="800"
+      letter-spacing="-3"
+      fill="url(#titleGradient)"
+    >
+      polycode
+      <!-- Pulse animation on opacity -->
+      <animate attributeName="opacity" values="1;0.88;1" dur="2.8s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" />
+    </text>
+
+    <!-- ─────────────────────────────────────────
+         TAGLINE
+    ───────────────────────────────────────── -->
+    <text
+      x="76"
+      y="190"
+      font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif"
+      font-size="15"
+      font-weight="400"
+      letter-spacing="0.3"
+      fill="#8b949e"
+    >Multi-provider MCP server · opencode · Gemini · Qwen</text>
+
+    <!-- ─────────────────────────────────────────
+         SEPARATOR LINE
+    ───────────────────────────────────────── -->
+    <line x1="0" y1="228" x2="1200" y2="228" stroke="#21262d" stroke-width="1" />
+
+    <!-- Gradient accent on separator -->
+    <line x1="72" y1="228" x2="600" y2="228" stroke="url(#titleGradient)" stroke-width="1.5" opacity="0.4" />
+
+    <!-- ─────────────────────────────────────────
+         BOTTOM STRIP: terminal command
+    ───────────────────────────────────────── -->
+    <rect x="0" y="229" width="1200" height="71" fill="#010409" />
+
+    <!-- Terminal prompt prefix -->
+    <text
+      x="76"
+      y="271"
+      font-family="'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace"
+      font-size="18"
+      font-weight="500"
+      fill="#22c55e"
+    >$</text>
+
+    <!-- Command text -->
+    <text
+      x="102"
+      y="271"
+      font-family="'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace"
+      font-size="18"
+      font-weight="400"
+      fill="#e6edf3"
+    >pip install polycode</text>
+
+    <!-- Blinking cursor -->
+    <rect x="338" y="252" width="10" height="20" fill="#22c55e" rx="1">
+      <animate attributeName="opacity" values="1;1;0;0" dur="1.2s" repeatCount="indefinite" keyTimes="0;0.5;0.5;1" />
+    </rect>
+
+    <!-- ─────────────────────────────────────────
+         RIGHT SIDE: Provider dots + labels
+    ───────────────────────────────────────── -->
+
+    <!-- Section header -->
+    <text
+      x="940"
+      y="85"
+      font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif"
+      font-size="11"
+      font-weight="500"
+      letter-spacing="1.8"
+      fill="#484f58"
+      text-anchor="middle"
+    >PROVIDERS</text>
+
+    <!-- Thin rule under header -->
+    <line x1="880" y1="92" x2="1000" y2="92" stroke="#21262d" stroke-width="1" />
+
+    <!-- ── opencode (purple) ── -->
+    <circle cx="880" cy="127" r="9" fill="#7c3aed" filter="url(#dotGlow)">
+      <animate attributeName="r" values="9;10.5;9" dur="3s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="1;0.85;1" dur="3s" repeatCount="indefinite" />
+    </circle>
+    <text
+      x="899"
+      y="132"
+      font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif"
+      font-size="13"
+      font-weight="500"
+      fill="#e6edf3"
+    >opencode</text>
+
+    <!-- ── Gemini (blue) ── -->
+    <circle cx="880" cy="162" r="9" fill="#3b82f6" filter="url(#dotGlow)">
+      <animate attributeName="r" values="9;10.5;9" dur="3s" begin="0.8s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="1;0.85;1" dur="3s" begin="0.8s" repeatCount="indefinite" />
+    </circle>
+    <text
+      x="899"
+      y="167"
+      font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif"
+      font-size="13"
+      font-weight="500"
+      fill="#e6edf3"
+    >Gemini CLI</text>
+
+    <!-- ── Qwen (cyan) ── -->
+    <circle cx="880" cy="197" r="9" fill="#06b6d4" filter="url(#dotGlow)">
+      <animate attributeName="r" values="9;10.5;9" dur="3s" begin="1.6s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="1;0.85;1" dur="3s" begin="1.6s" repeatCount="indefinite" />
+    </circle>
+    <text
+      x="899"
+      y="202"
+      font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif"
+      font-size="13"
+      font-weight="500"
+      fill="#e6edf3"
+    >Qwen Code</text>
+
+    <!-- Vertical connector line between dots -->
+    <line x1="880" y1="136" x2="880" y2="188" stroke="#21262d" stroke-width="1.5" stroke-dasharray="3,3" />
+
+    <!-- Right decorative vertical accent -->
+    <rect x="1196" y="0" width="4" height="300" fill="url(#titleGradient)" opacity="0.5" />
+
+    <!-- Corner accent: top-left subtle bracket -->
+    <path d="M 20 20 L 20 46 M 20 20 L 46 20" stroke="#30363d" stroke-width="1.5" fill="none" stroke-linecap="round" />
+
+    <!-- Corner accent: bottom-right -->
+    <path d="M 1180 280 L 1180 254 M 1180 280 L 1154 280" stroke="#30363d" stroke-width="1.5" fill="none" stroke-linecap="round" />
+
+  </g>
+</svg>

@@ -1,6 +1,8 @@
-# polycode
+<p align="center">
+  <img src="assets/banner.svg" alt="polycode" width="100%" />
+</p>
 
-A production-grade MCP (Model Context Protocol) server exposing **15 tools** that let Claude Code (or any MCP client) control three AI coding agents — [opencode](https://opencode.ai), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [Qwen Code](https://github.com/QwenLM/qwen-code) — with full session continuity, auth checking, and structured error handling.
+A production-grade MCP (Model Context Protocol) server exposing **13 tools** that let Claude Code (or any MCP client) control three AI coding agents — [opencode](https://opencode.ai), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [Qwen Code](https://github.com/QwenLM/qwen-code) — with full session continuity, auth checking, and structured error handling.
 
 ---
 
@@ -56,11 +58,12 @@ The MCP client (Claude Code, Gemini CLI, Qwen Code) auto-starts this server when
 pip install polycode
 ```
 
-Or without installing (requires `uv`):
-
+Verify the CLI is accessible:
 ```bash
-uvx polycode
+polycode --help
 ```
+
+> **Windows note:** If `polycode` is not found after install, find the full path with `where polycode` in PowerShell and use it in the MCP config below.
 
 ---
 
@@ -72,7 +75,7 @@ All three supported MCP clients use the same config format — only the config f
 ```json
 {
   "mcpServers": {
-    "opencode": {
+    "polycode": {
       "command": "polycode",
       "env": {
         "OPENCODE_DEFAULT_MODEL": "ollama/qwen3.5:cloud"
@@ -82,11 +85,11 @@ All three supported MCP clients use the same config format — only the config f
 }
 ```
 
-**Windows** — use the full binary path (find it with `where polycode`):
+**Windows** — use the full path to the binary. Find it by running `where polycode` in PowerShell, then paste the result as the `command` value:
 ```json
 {
   "mcpServers": {
-    "opencode": {
+    "polycode": {
       "command": "C:\\Users\\YourName\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\polycode.exe",
       "env": {
         "OPENCODE_DEFAULT_MODEL": "ollama/qwen3.5:cloud"
@@ -102,7 +105,7 @@ All three supported MCP clients use the same config format — only the config f
 | **Gemini CLI** | `~/.gemini/settings.json` |
 | **Qwen Code** | `~/.qwen/settings.json` |
 
-Restart your MCP client after saving. All 15 tools appear automatically.
+Restart your MCP client after saving. All 13 tools appear automatically.
 
 ---
 
